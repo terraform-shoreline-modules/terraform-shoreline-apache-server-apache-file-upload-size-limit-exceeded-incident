@@ -1,0 +1,142 @@
+{
+  "name": "apache_file_upload_size_limit_exceeded_incident",
+  "description": "This incident type pertains to a situation where the Apache file that is being uploaded exceeds the size limit that is set for the upload. Such a scenario occurs when the file's size is larger than what the server is configured to handle. This incident can result in the file upload process being halted, which can cause delays in the system's functioning.",
+  "params": [
+    {
+      "name": "NEW_FILE_SIZE_LIMIT",
+      "value": ""
+    },
+    {
+      "name": "FILE_PATH",
+      "value": ""
+    },
+    {
+      "name": "APACHE_ERROR_LOG",
+      "value": ""
+    },
+    {
+      "name": "PATH_TO_PHP_INI_FILE",
+      "value": ""
+    },
+    {
+      "name": "APACHE_CONFIG_FILE",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Apache File Upload Size Limit Exceeded Incident\nThis incident type pertains to a situation where the Apache file that is being uploaded exceeds the size limit that is set for the upload. Such a scenario occurs when the file's size is larger than what the server is configured to handle. This incident can result in the file upload process being halted, which can cause delays in the system's functioning."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the Apache version"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `httpd -v`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the Apache configuration file for the max file upload size limit set"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep -i \"LimitRequestBody\" ${APACHE_CONFIG_FILE}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the Apache error log for any error messages related to file upload"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `tail -f ${APACHE_ERROR_LOG}`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the file size of the file being uploaded"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ls -lh ${FILE_PATH}`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the available space on the server where Apache is running"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `df -h`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Restart the Apache service to apply any changes made to the configuration file"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `systemctl restart httpd`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the status of the Apache service"
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `systemctl status httpd`"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Increase the upload file size limit in the Apache server configuration file. This can be achieved by modifying the \"upload_max_filesize\" and \"post_max_size\" fields in the \"php.ini\" file."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_update_php_ini($NEW_FILE_SIZE_LIMIT, $PATH_TO_PHP_INI_FILE)"
+    }
+  ]
+}
